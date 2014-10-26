@@ -1,0 +1,94 @@
+---
+title: "Machine Learning Project"
+date: "Sunday, October 26, 2014"
+output: html_document
+---
+
+
+
+### Machine Learning Project
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+
+
+
+## Data
+
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment. 
+
+
+
+The first step was to clean the CSV data files of empty columns and save the new files with 53 column.
+```{r}
+
+dim(PML.TRAINING.REDUCE)
+
+dim(PML.TESTING.REDUCED_NO.NAME)
+
+names(PML.TESTING.REDUCED_NO.NAME)
+
+```
+
+
+
+## Cross Validation using Random Forest library
+
+```{r}
+
+library(AppliedPredictiveModeling)
+library(randomForest)
+library(caret)
+set.seed(2014)
+
+out.rfcv <- rfcv(PML.TRAINING.REDUCE, PML.TRAINING.REDUCE$classe, cv.fold=5, scale="log", step=0.5)
+plot(out.rfcv$n.var, out.rfcv$error.cv, log="x", type="o", lwd=2)
+
+```
+Using the Random Forest Cross-Validation for feature selection. The error.cv seems to be constant over the log the number of variables.
+
+
+## Modeling with Random Forest
+
+```{r}
+
+rfTree <- randomForest(PML.TRAINING.REDUCE$classe~.,  data = PML.TRAINING.REDUCE)
+
+rfTree
+
+```
+The Random Forest uses the classification as the prediction type on the variable 'classe'.
+In the model, 500 trees are created using 7 variables at each split. The OOB estimate of
+error rate is 0.29%. From the Confusion Matrix the errors for each class A,B,C,D and E
+are in the range 0.000358 to 0.00684.
+
+
+
+## Prediction with Random Forest
+
+```{r}
+
+predict(rfTree,PML.TESTING.REDUCED_NO.NAME)
+
+```
+The predictions yielded 100% agreement after being graded by the Automatic Grader.
+
+
+## Importance of Random Forest
+
+```{r}
+
+rfTree$importance
+
+```
+The roll, pitch and yaw for the belt seem to have high values.
+
+
+
